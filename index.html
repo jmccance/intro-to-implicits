@@ -1,45 +1,45 @@
 <!doctype html>
 <html lang="en">
 
-	<head>
-		<meta charset="utf-8">
+  <head>
+    <meta charset="utf-8">
 
-		<title>reveal.js – The HTML Presentation Framework</title>
+    <title>A Quick Intro to Implicits</title>
 
-		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
-		<meta name="author" content="Hakim El Hattab">
+    <meta name="description" content="A brief introduction to Scala implicit conversions and parameters.">
+    <meta name="author" content="Joel McCance">
 
-		<meta name="apple-mobile-web-app-capable" content="yes">
-		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css" id="theme">
 
-		<!-- Code syntax highlighting -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
 
-		<!-- Printing and PDF exports -->
-		<script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
-		</script>
+    <!-- Printing and PDF exports -->
+    <script>
+var link = document.createElement( 'link' );
+link.rel = 'stylesheet';
+link.type = 'text/css';
+link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
 
-		<!--[if lt IE 9]>
-		<script src="lib/js/html5shiv.js"></script>
-		<![endif]-->
-	</head>
+    <!--[if lt IE 9]>
+      <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
 
-	<body>
+  <body>
 
-		<div class="reveal">
+    <div class="reveal">
 
-			<!-- Any section element inside of this container is displayed as a slide -->
-			<div class="slides">
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
         <section>
           <h1>A Quick Intro to Implicits</h1>
           <div>
@@ -48,85 +48,233 @@
         </section>
 
         <section>
-          <section data-markdown>
-            # Implicit Parameters
-
+          <section>
+            <h1>Prologue</h1>
           </section>
 
-          <section data-markdown>
-            ## Implicit Parameters
+          <section>
+            <h2>Prologue</h2>
 
-            ### The Setup
+            <h3>The Setup</h3>
 
-            ```scala
-            trait DbConfig
-            trait DbClient
-
-            def getWidget(db: DbClient, id: Id): Widget
-            def putWidget(db: DbClient, item: Widget): Unit
-
-            getWidget(db, id)
-            putWidget(db, item)
-            ```
+            <pre><code data-trim data-noescape class="scala">
+trait Read[A] {
+  def read(s: String): A
+}
+            </code></pre>
           </section>
 
-          <section data-markdown>
-            ## Implicit Parameters
+          <section>
+            <h2>Prologue</h2>
 
-            ### Implicit Parameters == Less Typing
+            <pre><code data-trim data-noescape class="scala">
+val fooRead: Read[Foo] = ???
+val s: String = ???
 
-            ```scala
-            def getWidget(id: Id)(implicit db: DbClient): Widget
-            def putWidget(item: Widget)(implicit db: DbClient): Unit
-
-            getWidget(id)
-            putWidget(item)
-            ```
+val myFoo = fooRead.read(s)
+            </code></pre>
           </section>
 
-          <section data-markdown>
-            ## Implicit Parameters
+          <section>
+            <h2>Prologue</h2>
 
-            An implicit parameter can be a simple value.
+            <pre><code data-trim data-noescape class="scala">
+def loadFromFile[A](file: File, aRead: Read[A]): Seq[A]
 
-            ```scala
-            implicit val db = DbClient(config)
-            ```
+val foos = loadFromFile(myFile, fooRead)
+            </code></pre>
           </section>
 
-          <section data-markdown>
-            ## Implicit Parameters
+          <section>
+            <h2>Prologue</h2>
 
-            Implicit parameters can also be defined using functions that take other implicits.
+            <pre><code data-trim data-noescape class="scala">
+def seqRead[A](aRead: Read[A]): Read[Seq[A]] = ???
 
-            ```scala
-            implicit def db(implicit db: DbConfig): DbClient = ???
-            ```
+val myFoos = seqRead(fooRead).read(s)
+            </code></pre>
           </section>
 
-          <section data-markdown>
-            ## Implicit Parameters
+          <section>
+            <h2>Prologue</h2>
 
-            ### Use Cases
+            <pre><code data-trim data-noescape class="scala">
+val myComplexFoos: Map[String, Seq[Either[String, Foo]]] =
+  mapRead(stringRead, seqRead(either(stringRead, fooRead))).read(s)
+            </code></pre>
+          </section>
 
-            * Configuration: Specify a timeout or an execution context just once.
-            * Typeclasses: Stay Tuned! (Time permitting)
+          <section>
+            <h1>😒</h1>
+          </section>
+        </section>
+
+        <section>
+
+          <section>
+            <h1>Implicit Parameters</h1>
+
+            <h2>Let the Compiler Figure It Out</h2>
+          </section>
+
+          <section>
+            <h2>Implicit Parameters</h2>
+
+            <p>Let the compiler bring the parameter to you.</p>
+
+            <pre><code data-trim data-noescape class="scala">
+def read[A](a: A)(implicit aRead: Read[A]): A = aRead.read(a)
+
+val myFoo: Foo = read(s)
+val myFoo = read[Foo](s) // Alternatively
+            </code></pre>
+          </section>
+
+          <section>
+            <h2>Implicit Parameters</h2>
+            <pre><code data-trim data-noescape class="scala">
+def loadMixedFile[A, B](file: File)
+                       (implicit aRead: Read[A],
+                        bRead: Read[B]): (Seq[A], Seq[B])
+
+loadMixedFile(someMixedFile)
+            </code></pre>
+          </section>
+
+          <section>
+            <h2>Implicit Parameters</h2>
+
+            <h3>Declaring Parameter Lists</h3>
+
+            <ul>
+              <li>Methods may declare a parameter list implicit by starting it with the <code>implicit</code> keyword.</li>
+              <li>You can require as many implicit parameters as you need.</li>
+              <li>A method may only have one implicit parameter list.</li>
+              <li>The implicit parameter list must come last.</li>
+              <li>When called, the compiler must be able to figure out the type of all the implicit parameters.</li>
+            </ul>
+            
+            <aside class="notes">
+              <p>Can you guess why the implicit list has to come last?</p>
+
+              <p>The "one implicit parameter list" bullet may change in the future.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Implicit Parameters</h2>
+
+            <p>But where do they come from?</p>
+          </section>
+
+          <section>
+            <h2>Implicit Parameters</h2>
+
+            <p>An implicit parameter can be a simple value.</p>
+
+            <pre><code data-trim data-noescape class="scala">
+implicit val fooRead: Read[Foo] = ???
+            </code></pre>
+          </section>
+
+          <section>
+            <h2>Implicit Parameters</h2>
+
+            <p>Or it can be a function that takes additional implicit parameters.</p>
+
+            <pre><code data-trim data-noescape class="scala">
+implicit def seqRead[A](implicit aRead: Read[A]): Read[Seq[A]] = ???
+            </code></pre>
+
+            <aside class="notes">
+              Can you guess why the parameters have to be implicit?
+            </aside>
+          </section>
+
+          <section>
+            <h2>Implicit Parameters</h2>
+
+            <p><i>This means implicit parameters can compose.</i></p>
+
+            <p>So if you write all this once...</p>
+
+            <pre><code data-trim data-noescape class="scala">
+implicit def seqRead[A](implicit aR: Read[A]): Read[Seq[A]] = ???
+implicit def mapRead[A, B])(implicit aR: Read[A],
+                            bR: Read[B]): Map[A, B] = ???
+implicit def eitherRead[A, B](implicit aR: Read[A],
+                              bR: Read[B]): Either[A, B] = ???
+            </code></pre>
+          </section>
+          
+          <section>
+            <h2>Implicit Parameters</h2>
+
+            <p>This:</p>
+
+          <pre><code data-trim data-noescape class="scala">
+val myComplexFoos: Map[String, Seq[Either[String, Foo]]] =
+  mapRead(stringRead, seqRead(either(stringRead, fooRead))).read(s)
+          </code></pre>
+
+          <p>Becomes this:</p>
+
+          <pre><code data-trim data-noescape class="scala">
+val myComplexFoos: Map[String, Seq[Either[String, Foo]]] = read(s)
+            </code></pre>
+          </section>
+
+          <section>
+            <h2>Implicit Parameters</h2>
+
+            <h3>Declaring Implicit Definitions</h3>
+
+            <ul>
+              <li>Implicit definitions are declared with the <code>implicit</code> keyword.</li>
+              <li>Implicit definitions can be <code>val</code>s or <code>def</code>s.</li>
+              <li>Implicit <code>def</code>s can only have implicit parameter lists.</li>
+              <li>You can declare multiple implicit definitions of the same type, but their usage must be unambiguous. (More on this later.)</li>
+            </ul>
           </section>
         </section>
 
         <section>
           <section>
             <h1>Implicit Conversions</h1>
+
+            <h2>Scrap Some Boilerplate</h2>
           </section>
 
-          <section data-markdown>
-            ## Implicit Conversions
+          <section>
+            <h2>Implicit Conversions</h2>
 
-            Implicit conversions take exactly one, non-implicit parameter.
+            <p>Sometimes we have to write the same thing over and over.</p>
 
-            ```scala
-            implicit def asSeq[A](list: java.lang.List[A]): Seq[A] = ???
-            ```
+            <pre><code data-trim data-noescape class="scala">
+val foo = Foo.from(javaFooBeanService.getById(fooId))
+/* later */
+javaFooBeanService.put(foo.toFooBean)
+            </code></pre>
+
+            <aside class="notes">
+On another Scala project, we had a giant Map where the values needed to be one thing, but we modeled them as another. Because of some type issues, we couldn't just declare them as one thing and then map over it to change them to the other. So instead we had 25+ lines of `toBlah`, which I killed off with an implicit conversion.
+            </aside>
+          </section>
+
+          <section>
+            <h2>Implicit Conversions</h2>
+
+            <p>Implicit conversions tell the compiler how to turn something of one type into another.</p>
+
+            <pre><code data-trim data-noescape class="scala">
+case class Foo(id: Long, name: String)
+// Imagine a FooBean has Java-style accessors.
+
+implicit def toFoo(bean: FooBean): Foo = ???
+
+myFooBean.name // Can invoke Foo methods directly on a FooBean
+scalaFooService.put(myFooBean) // Or pass a FooBean where a Foo is expected.
+            </code></pre>
           </section>
 
           <section>
@@ -135,24 +283,50 @@
             <p>Implicit conversions can also take implicit parameters.</p>
 
             <pre><code data-trim>
-implicit def fooToBar(foo: Foo)
-                     (implicit converter: FooConverter[Bar]): Bar
+implicit def stringAsFoo(s: String)
+                        (implicit fooRead: Read[Foo]): Foo
+
+val s: String = ???
+
+s.name
+scalaFooService.put(s)
             </code></pre>
           </section>
 
           <section>
             <h2>Implicit Conversions</h2>
 
-            <h3>Use Cases</h3>
+            <h3>Declaring Implicit Conversions</h3>
 
             <ul>
-              <li>Conversions (surprise!)</li>
-              <li>Extending existing classes</li>
+              <li>Implicit conversions are methods declared with the <code>implicit</code> keyword.</li>
+              <li>They must take exactly one non-implicit parameter.</li>
+              <li>They may optionally take additional, implicit parameters</li>
+              <li>The compiler will only make unambiguous conversions.</li>
             </ul>
+          </section>
+          
+          <section>
+            <h2>Implicit Conversions</h2>
+
+            <h3>Using Implicit Conversions</h3>
+
+            <p>The compiler will look for an implicit conversion when</p>
+
+            <ul>
+              <li>You try to invoke a nonexistent method.</li>
+              <li>You try to use a type where it is not allowed. (E.g., pass a Foo to a function expecting a Bar.</li>
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h1>Implicit Classes</h1>
           </section>
 
           <section>
-            <h2>Implicit Conversions</h2>
+            <h2>Implicit Classes</h2>
 
             <h3>Extension Classes By Hand</h3>
 
@@ -169,15 +343,35 @@ implicit def toShoutyString(s: String): ShoutyString =
           </section>
 
           <section>
-            <h2>Implicit Conversions</h2>
+            <h2>Implicit Classes</h2>
 
-            <h3>Extension Classes: The Easy Way</h3>
+            <p>Implicit classes combine both into one definition.</p>
 
             <pre><code data-trim class="scala">
 implicit class ShoutyString(s: String) {
   def shouted: String = s.toUpperCase + "!!!"
 }
             </code></pre>
+
+            <p>The same rules apply to implicit classes as to implicit conversions.</p>
+          </section>
+
+          <section>
+            <h2>Implicit Classes</h2>
+
+            <p>If your implicit class is stateless, you can (and should) make it a <a href="http://docs.scala-lang.org/overviews/core/value-classes.html">value class</a>. Value classes let you call methods without paying the cost of instantiating them.</p>
+
+            <pre><code data-trim data-noescape class="scala">
+implicit class ShoutyString(val s: String) extends AnyVal {
+  def shouted: String = s.toUpperCase + "!!!"
+}
+            </code></pre>
+
+            <p>Value classes have one <code>val</code> constructor parameter and extend <code>AnyVal</code>.</p>
+
+            <aside class="notes">
+              Value classes basically convert all the extension class's method calls into functions, instead of allocating an instance of the class, calling a method on it, and then garbage collecting it.
+            </aside>
           </section>
         </section>
 
@@ -193,7 +387,20 @@ implicit class ShoutyString(s: String) {
           <section>
             <h2>The Implicit Scope</h2>
 
-            <h3>Step 1: The Current (Non-Implicit) Scope</h3>
+            <p>The compiler checks two basic areas, in order.</p>
+
+            <ol>
+              <li>"All identifiers <i>x</i> that can be accessed at the point of the method call without a prefix and that denote an implicit definition or an implicit parameter."</li>
+                <li>"All members of companion modules of the implicit parameter’s type that are labeled implicit."</li>
+            </ol>
+
+            <p>(Source: <a href="http://docs.scala-lang.org/tutorials/tour/implicit-parameters.html">http://docs.scala-lang.org/tutorials/tour/implicit-parameters.html</a>)</p>
+          </section>
+
+          <section>
+            <h2>The Implicit Scope</h2>
+
+            <h3>Option 1: The Current (Non-Implicit) Scope</h3>
 
             <ul>
               <li>Is it defined in the current scope? (E.g., in this function or class.)</li>
@@ -204,11 +411,14 @@ implicit class ShoutyString(s: String) {
 
           <section>
             <h2>The Implicit Scope</h2>
-            <h3>Step 2: The Twisting Nether (Conversions)</h3>
+            <h3>Option 2: The Twisting Nether (Conversions)</h3>
 
-            <p>Is it in the companion type of the given or target type?</p>
+            <p>Is it in the companion object of the source or target type?</p>
 
             <pre><code data-trim class="scala">
+val bar: Bar = foo
+val foo: Foo = bar
+
 object Foo {
   // If you try to use a Foo like a Bar, this will be found.
   implicit def toBar(foo: Foo): Bar = ???
@@ -221,29 +431,93 @@ object Foo {
 
           <section>
             <h2>The Implicit Scope</h2>
-            <h3>Step 2: The Twisting Nether (Parameters)</h3>
+            <h3>Option 2: The Twisting Nether (Parameters)</h3>
 
-            <p>Is it in the companion object of the type?</p>
+            <p>Is it in the companion object of the top-level type?</p>
 
             <pre><code data-trim class="scala">
-object Reads {
-  implicit val readInt: Reads[Int] = ???
+val n = read[Int](s)
+val isP = read[Boolean](s)
+
+object Read {
+  // Common use case: Declaring instances for standard library
+  // types.
+  implicit val readInt: Read[Int] = ???
+  implicit val readBoolean: Read[Boolean] = ???
 }
             </code></pre>
           </section>
 
           <section>
             <h2>The Implicit Scope</h2>
-            <h3>Step 2: The Twisting Nether (Parameters)</h3>
+            <h3>Option 2: The Twisting Nether (Parameters)</h3>
 
             <p>Is it in the companion object of a type parameter?</p>
 
             <pre><code data-trim class="scala">
-case class Foo(name: String)
+val foo = read[Foo](s)
 
 object Foo {
-  implicit val reader: Reads[Foo] = ???
+  // Common use case: You're using a library that provides Read
+  // and you want to provide Read instances for your types.
+  implicit val readFoo: Read[Foo] = ???
 }
+            </code></pre>
+          </section>
+
+          <section>
+            <h2>The Implicit Scope</h2>
+
+            <h3>Recap</h3>
+
+            <ul>
+              <li>The immediate scope is searched first, then the companion objects.</li>
+              <li>If there are multiple candidates found in a given scope, then the implicit is ambiguous and compilation fails.</li>
+              <li>Companion objects for both types and type parameters are searched.</li>
+            </ul>
+          </section>
+
+          <section>
+            <pre><code data-trim data-noescape class="scala">
+// Ambiguous!
+case class Foo(id: Long)
+object Foo {
+  implicit val readFoo: Read[Foo] = ???
+}
+
+trait Read[A] { def read(s: String): A }
+object Read {
+  implicit val readFoo: Read[Foo] = ???
+}
+
+read[Foo](s) // Both implicits apply and are in the companion scope
+            </code></pre>
+          </section>
+
+          <section>
+            <pre><code data-trim data-noescape class="scala">
+// Ambiguous!
+implicit val fooRead1: Read[Foo] = ???
+
+def f() = {
+  implicit val fooRead2: Read[Foo] = ??
+
+  read[Foo](s) // Both implicits apply and are in the first scope
+}
+            </code></pre>
+          </section>
+
+          <section>
+            <pre><code data-trim data-noescape class="scala">
+// Unambiguous
+case class Foo(id: Long)
+object Foo {
+  implicit val readFoo: Read[Foo] = ???
+}
+
+implicit val customFooRead: Read[Foo] = ???
+
+read[Foo](s) // Uses customFooRead, which is in the first scope
             </code></pre>
           </section>
         </section>
@@ -265,48 +539,47 @@ object Foo {
             <p>Create special types for implicit parameters to avoid ambiguity.</p>
 
             <p>
-              An implicit Duration could mean a lot of things. An implicit DatabaseTimeout is less
-              likely to conflict.
+            An implicit Duration could mean a lot of things, and you only get to declare one of them implicitly. An implicit DatabaseTimeout that <i>contains</i> a Duration is more specific.
             </p>
           </section>
 
           <section>
             <h2>Best Practices</h2>
 
-            <p>Be conservative with implicits. You can't debug what you can't see.</p>
+            <p>When designing libraries and types, be conservative with implicits. Sometimes more typing is clearer.</p>
           </section>
         </section>
-			</div>
+      </div>
 
-		</div>
+    </div>
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
 
-		<script>
+    <script>
 
-			// Full list of configuration options available at:
-			// https://github.com/hakimel/reveal.js#configuration
-			Reveal.initialize({
-				controls: true,
-				progress: true,
-				history: true,
-				center: true,
+// Full list of configuration options available at:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+  controls: true,
+  progress: true,
+  history: true,
+  center: true,
 
-				transition: 'slide', // none/fade/slide/convex/concave/zoom
+  transition: 'slide', // none/fade/slide/convex/concave/zoom
 
-				// Optional reveal.js plugins
-				dependencies: [
-					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-					{ src: 'plugin/zoom-js/zoom.js', async: true },
-					{ src: 'plugin/notes/notes.js', async: true }
-				]
-			});
+  // Optional reveal.js plugins
+  dependencies: [
+  { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+  { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+  { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+  { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+  { src: 'plugin/zoom-js/zoom.js', async: true },
+  { src: 'plugin/notes/notes.js', async: true }
+  ]
+});
 
-		</script>
+    </script>
 
-	</body>
+  </body>
 </html>
