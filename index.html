@@ -120,8 +120,10 @@ val myComplexFoos: Map[String, Seq[Either[String, Foo]]] =
           <section>
             <h2>Implicit Parameters</h2>
 
-            <p>Let the compiler bring the parameter to you.</p>
+            <p>Give the compiler recipes it can use for certain omitted parameters.</p>
+          </section>
 
+          <section>
             <pre><code data-trim data-noescape class="scala">
 def read[A](a: A)(implicit aRead: Read[A]): A = aRead.read(a)
 
@@ -153,7 +155,7 @@ loadMixedFile(someMixedFile)
               <li>The implicit parameter list must come last.</li>
               <li>When called, the compiler must be able to figure out the type of all the implicit parameters.</li>
             </ul>
-            
+
             <aside class="notes">
               <p>Can you guess why the implicit list has to come last?</p>
 
@@ -206,20 +208,20 @@ implicit def eitherRead[A, B](implicit aR: Read[A],
                               bR: Read[B]): Either[A, B] = ???
             </code></pre>
           </section>
-          
+
           <section>
             <h2>Implicit Parameters</h2>
 
             <p>This:</p>
 
-          <pre><code data-trim data-noescape class="scala">
+            <pre><code data-trim data-noescape class="scala">
 val myComplexFoos: Map[String, Seq[Either[String, Foo]]] =
   mapRead(stringRead, seqRead(either(stringRead, fooRead))).read(s)
-          </code></pre>
+            </code></pre>
 
-          <p>Becomes this:</p>
+            <p>Becomes this:</p>
 
-          <pre><code data-trim data-noescape class="scala">
+            <pre><code data-trim data-noescape class="scala">
 val myComplexFoos: Map[String, Seq[Either[String, Foo]]] = read(s)
             </code></pre>
           </section>
@@ -257,8 +259,14 @@ javaFooBeanService.put(foo.toFooBean)
             </code></pre>
 
             <aside class="notes">
-On another Scala project, we had a giant Map where the values needed to be one thing, but we modeled them as another. Because of some type issues, we couldn't just declare them as one thing and then map over it to change them to the other. So instead we had 25+ lines of `toBlah`, which I killed off with an implicit conversion.
+              On another Scala project, we had a giant Map where the values needed to be one thing, but we modeled them as another. Because of some type issues, we couldn't just declare them as one thing and then map over it to change them to the other. So instead we had 25+ lines of `toBlah`, which I killed off with an implicit conversion.
             </aside>
+          </section>
+
+          <section>
+            <h2>Implicit Conversions</h2>
+
+            <p>Provide recipes the compiler can use to fix type errors.</p>
           </section>
 
           <section>
@@ -305,7 +313,7 @@ scalaFooService.put(s)
               <li>The compiler will only make unambiguous conversions.</li>
             </ul>
           </section>
-          
+
           <section>
             <h2>Implicit Conversions</h2>
 
@@ -323,6 +331,12 @@ scalaFooService.put(s)
         <section>
           <section>
             <h1>Implicit Classes</h1>
+          </section>
+
+          <section>
+            <h2>Implicit Classes</h2>
+
+            <p>Class doesn't have the methods you want? Turn it into one that does.</p>
           </section>
 
           <section>
@@ -391,7 +405,7 @@ implicit class ShoutyString(val s: String) extends AnyVal {
 
             <ol>
               <li>"All identifiers <i>x</i> that can be accessed at the point of the method call without a prefix and that denote an implicit definition or an implicit parameter."</li>
-                <li>"All members of companion modules of the implicit parameter’s type that are labeled implicit."</li>
+              <li>"All members of companion modules of the implicit parameter’s type that are labeled implicit."</li>
             </ol>
 
             <p>(Source: <a href="http://docs.scala-lang.org/tutorials/tour/implicit-parameters.html">http://docs.scala-lang.org/tutorials/tour/implicit-parameters.html</a>)</p>
@@ -478,6 +492,8 @@ object Foo {
           </section>
 
           <section>
+            <h2>The Implicit Scope</h2>
+            <h3>Examples</h3>
             <pre><code data-trim data-noescape class="scala">
 // Ambiguous!
 case class Foo(id: Long)
@@ -495,6 +511,8 @@ read[Foo](s) // Both implicits apply and are in the companion scope
           </section>
 
           <section>
+            <h2>The Implicit Scope</h2>
+            <h3>Examples</h3>
             <pre><code data-trim data-noescape class="scala">
 // Ambiguous!
 implicit val fooRead1: Read[Foo] = ???
@@ -508,6 +526,8 @@ def f() = {
           </section>
 
           <section>
+            <h2>The Implicit Scope</h2>
+            <h3>Examples</h3>
             <pre><code data-trim data-noescape class="scala">
 // Unambiguous
 case class Foo(id: Long)
@@ -518,6 +538,26 @@ object Foo {
 implicit val customFooRead: Read[Foo] = ???
 
 read[Foo](s) // Uses customFooRead, which is in the first scope
+            </code></pre>
+          </section>
+
+          <section>
+            <h2>The Implicit Scope</h2>
+            <h3>Examples</h3>
+            <pre><code data-trim data-noescape class="scala">
+case class Foo(id: Long)
+object Foo {
+  implicit val readFoo: Read[Foo] = ???
+}
+import Foo._
+
+trait Read[A] { def read(s: String): A }
+object Read {
+  implicit val readFoo: Read[Foo] = ???
+}
+
+// Ambiguous or not?
+read[Foo](s)
             </code></pre>
           </section>
         </section>
@@ -561,7 +601,8 @@ read[Foo](s) // Uses customFooRead, which is in the first scope
         </section>
 
         <section>
-            <h1>👹</h1>
+          <h1>👹</h1>
+          <h1>Questions?</h1>
         </section>
       </div>
 
