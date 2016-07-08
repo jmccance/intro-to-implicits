@@ -524,30 +524,44 @@ read[Foo](s) // Uses customFooRead, which is in the first scope
 
         <section>
           <section>
-            <h1>Best Practices</h1>
+            <h1>Designing with Implicits</h1>
           </section>
 
           <section>
-            <h2>Best Practices</h2>
+            <h2>Designing with Implicits</h2>
 
-            <p>Use companion objects to simplify imports.</p>
+            <p>Use custom, specific types for implicit parameters to avoid ambiguity issues.</p>
+
+            <p>Example: You want to define an implicit parameter for a timeout for a database. Defining an implicit Duration would break if you needed to add a different timeout later. Instead, define a DatabaseTimeout case class that wraps a Duration.</p>
           </section>
 
           <section>
-            <h2>Best Practices</h2>
+            <h2>Designing with Implicits</h2>
 
-            <p>Create special types for implicit parameters to avoid ambiguity.</p>
+            <p>Use typeclasses (parameterized implicit parameters like Read[A]) to provide functionality for types that you may or may not control.</p>
 
-            <p>
-            An implicit Duration could mean a lot of things, and you only get to declare one of them implicitly. An implicit DatabaseTimeout that <i>contains</i> a Duration is more specific.
-            </p>
+            <p>Example: play-json provides the Reads and Writes typeclasses so that you can write JSON serializers for any library without requiring that classes inherit from a specific type.</p>
           </section>
 
           <section>
-            <h2>Best Practices</h2>
+            <h2>Designing with Implicits</h2>
 
-            <p>When designing libraries and types, be conservative with implicits. Sometimes more typing is clearer.</p>
+            <p>Be conservative with implicit conversions to keep code easy to read even without an IDE.</p>
+
+            <p>Example: The standard library provides implicit conversions to and from Java collections. However, it's often more useful for these conversions to be explicit so that you can easily spot which types are Java and which are Scala.</p>
           </section>
+
+          <section>
+            <h2>Designing with Implicits</h2>
+
+            <p>Avoid using implicit classes to add helper methods to integration classes.</p>
+
+            <p>Example: Adding implicit extensions to something like a Java database client can seem like a good idea when you start, but it can make testing classes that use the database client more difficult. It's often better to use a non-implicit wrapper trait that you can more easily mock out for testing.</p>
+          </section>
+        </section>
+
+        <section>
+            <h1>👹</h1>
         </section>
       </div>
 
